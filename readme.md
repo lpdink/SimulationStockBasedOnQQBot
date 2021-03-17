@@ -38,14 +38,14 @@
 		- qq号(user_id)
 		- 活跃订单编号(alive\_order_index)
 		- 订单时间(alive\_order_time)
-		- 购买股票的编号(buying_stock_index)
-		- 购买股票的名称(buying_stock_name)
-		- 购买股票的数量(buying_stock_amount)
-		- 购买股票的单价(buying_stock_price)
+		- 购买股票的编号(buying\_stock_index)
+		- 购买股票的名称(buying\_stock_name)
+		- 购买股票的数量(buying\_stock_amount)
+		- 购买股票的单价(buying\_stock_price)
 		- 订单总金额(order\_money_amount)
 	- 全局变量(global_vars)
-		- 买入手续费用(buy_service_charge)
-		- 卖出手续费用(sell_service_charge)
+		- 买入手续费用(buy\_service_charge)
+		- 卖出手续费用(sell\_service_charge)
 		- 其他
 	- 其他
 - 模块设计
@@ -55,12 +55,23 @@
 	- controller：与前端交互，即QQBot的调用部分。
 
 ## 实现
-### TODO 
+ 
 - dao
-	- 包含的文件
-		- 包含的类
-			- 类的方法
-			- 类的属性
+	- DataBaseOperator.py
+		- 类的属性
+			- __connect: 与数据库的连接
+			- __cursor: 游标，进行数据库操作
+		- 类的方法
+			- openConnect(self): 打开数据库连接，创建游标
+			- getConnect(self): 获取数据库连接
+			- getCursor(self): 获取游标
+			- closeConnect(self): 关闭数据库连接，关闭游标
+			- addRecord(self, table, record):向表table(str)中插入记录record(str)
+			- deleteRecord(self, table, primary_key):从表table(str)中删除主键(id)为primary_key(str)的记录
+			- changeRecord(self, table, primary_key, record):将表table(str)中主键（id)为primary_key(str)的记录，修改为record
+			- searchRecord(self, table, primary_key, record):返回表table(str)中主键(id)为primary_key的记录
+	- dataBaseConfig.ini
+		- 数据库的配置文件
 - domain
 	- 包含的文件
 		- 包含的类
@@ -76,4 +87,10 @@
 		- 包含的类
 			- 类的方法
 			- 类的属性
+## TODO
+- ./dao/DataBaseOperator.py，请帮助完成增删改查函数，实现后务必进行测试，保证与mysql数据库的正常交互，请不要删掉测试用例。
+- ./domain/，请参考UserInformation.py定义，及readme.md的数据设计部分，完成其余4个类的代码
+- ./service/Server.py，请在完成前两个需求后，设计定义在server类中的方法，包括需要的参数，功能的实现，返回值等。
 ## 使用框架
+- python==3.7
+- PyMySQL==1.0.2
