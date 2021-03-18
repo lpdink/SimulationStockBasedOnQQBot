@@ -6,5 +6,5 @@ class StockInformation:
         self.history_price = kwargs['history_price']
 
 if __name__ == "__main__":
-    stockInformation = StockInformation(stock_id=110260, now_price=120,
+    stock_information = StockInformation(stock_id=110260, now_price=120,
                                         flush_time=5,history_price=500)

@@ -1,4 +1,4 @@
-class User_holdings:
+class UserHoldings:
     def __init__(self, **kwargs):
         self.user_id = kwargs['user_id']
         self.stock_index = kwargs['stock_index']
@@ -8,5 +8,5 @@ class User_holdings:
 
 
 if __name__ == "__main__":
-    user_holdings = User_holdings(user_id=114514, stock_index=110260,
+    user_holdings = UserHoldings(user_id=114514, stock_index=110260,
                                         stock_amount=5, bought_price=50, bought_total_price=500)

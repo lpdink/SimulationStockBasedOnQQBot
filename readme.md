@@ -88,9 +88,35 @@
 			- 类的方法
 			- 类的属性
 ## TODO
-- ./dao/DataBaseOperator.py，请帮助完成增删改查函数，实现后务必进行测试，保证与mysql数据库的正常交互，请不要删掉测试用例。
+- 【已完成】./dao/DataBaseOperator.py，请帮助完成增删改查函数，实现后务必进行测试，保证与mysql数据库的正常交互，请不要删掉测试用例。
 - ./domain/，请参考UserInformation.py定义，及readme.md的数据设计部分，完成其余4个类的代码
 - ./service/Server.py，请在完成前两个需求后，设计定义在server类中的方法，包括需要的参数，功能的实现，返回值等。
 ## 使用框架
-- python==3.7
+- python==3.7（请注意，这是必须的，nonebot要求3.7及以上的版本）
 - PyMySQL==1.0.2
+- nonebot==1.8.2 [官方文档](https://docs.nonebot.dev/guide/)
+- go-cqhttp==v0.9.40 [官方文档](https://docs.go-cqhttp.org/guide/quick_start.html)
+## 关于QQBot的配置
+- 概述
+	- go-cqhttp：本体是一个可执行文件（exe），做好配置，打开后将创建api服务器，socket服务器和http服务器。它将模拟登录我们的QQ号（机器人），通过一定命令，向api服务器发送HTTP请求，我们可以操纵机器人完成发送消息，删除好友等任务。它本身也会接收机器人接收到的消息，并按照我们的配置，转发到处理程序（python程序），这正是我们需要的。
+	- nonebot：用于go-cphttp转发的消息，本身也对go-cphttp的api进行了封装，使得我们一方面能收到机器人QQ号收到的消息，另一方面，不必手写HTTP请求，就能通过go-cqhttp完成机器人操作。
+- 配置go-cqhttp
+	- 建议参考[官方文档](https://docs.go-cqhttp.org/guide/quick_start.html)和本readme共同配置。
+	- 访问[go-cqhttp-releases](https://github.com/Mrs4s/go-cqhttp/releases)下载最新版（V0.9.40）windows64位的压缩包。
+	- 解压缩包，得到一个go-cqhttp.exe的文件
+	- 运行该文件，此时在同目录下，会生成config.hjson配置文件
+	- 用文本编辑器打开配置文件，需要编辑：
+		- uin: 用作机器人的QQ号
+		- password：QQ号的密码
+		- encrypt_password：是否对密码加密
+		- enable_db: 设置为true
+		- heartbeat_interval：建议设置为-1
+		- ws\_reverse\_servers:这是关键！go-cqhttp通过这里的配置，知道将消息转发给谁。设置enabled为true，reverse_url为ws://127.0.0.1:8080/ws/，其余不变。
+	- 运行go-cqhttp，按照提示操作。
+	- 如果遇到需要验证码（滑块）的问题，参考[官方文档-滑块验证码](https://docs.go-cqhttp.org/faq/slider.html)，请选择方案A自行抓包。注意复制ticket时不要复制两端的引号。
+	- 运行成功后，你可以尝试通过另一个QQ号向机器人的QQ号发送消息，可以在cqhttp中看到响应。
+- 配置none-bot：
+	- 通过pip安装none-bot的1.8.2版本（最新版本）
+	- 运行./controller/QQBot.py
+	- 先打开nonebot或是go-cqhttp都可以，如果成功，可以在nonebot的python命令行里，看到go-cqhttp转发的消息，你依然可以通过上面提到的方法进行测试。
+	- 注意，请保证QQBot.py中第六行，host和port的设置与go-cphttp的反向服务器（ws\_reverse\_servers）配置一致.

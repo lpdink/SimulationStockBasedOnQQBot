@@ -1,4 +1,4 @@
-class Alive_order:
+class AliveOrder:
     def __init__(self, **kwargs):
         self.user_id = kwargs['user_id']
         self.alive_order_index = kwargs['alive_order_index']
@@ -11,6 +11,6 @@ class Alive_order:
 
 
 if __name__ == "__main__":
-    alive_order = Alive_order(user_id=114514, alive_order_index=110260,
+    alive_order = AliveOrder(user_id=114514, alive_order_index=110260,
                                         alive_order_time=5, buying_stock_index=114514, buying_stock_name=500,
                                         buying_stock_amount=5, buying_stock_price=50, order_money_amount=500)
