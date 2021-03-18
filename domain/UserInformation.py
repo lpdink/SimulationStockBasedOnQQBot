@@ -9,4 +9,4 @@ class UserInformation:
 
 if __name__ == "__main__":
     user_information = UserInformation(user_id=114514, user_name="野兽先辈",
-                                       free_money_amount=5, total_money_amount=50,history_money_amount=500)
+                                        free_money_amount=5, total_money_amount=50,history_money_amount=500)
