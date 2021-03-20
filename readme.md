@@ -91,10 +91,12 @@
 ## TODO
 - 【已完成】./dao/DataBaseOperator.py，请帮助完成增删改查函数，实现后务必进行测试，保证与mysql数据库的正常交互，请不要删掉测试用例。
 - 【已完成】./domain/，请参考UserInformation.py定义，及readme.md的数据设计部分，完成其余4个类的代码
-- ./domain/，参考UserInformation.py中对\__str\__方法的重写，以及readme.md的定义，重写其他四个类的\__str__方法，保证与数据库一条记录的字符串格式一致，能被addrecord方法直接添加。
-- ./dao/DataBaseOperator.py,请帮助完成新添加的两个函数searchRecordValue()及searchRecordWithTwoFieldsValue()，具体说明见文件.
-- ./service/Server.py，请参考已经实现的register(),addSelfStock(),buyStock()三个方法，完成剩余5个方法的实现。
+- 【已完成】./domain/，参考UserInformation.py中对\__str\__方法的重写，以及readme.md的定义，重写其他四个类的\__str__方法，保证与数据库一条记录的字符串格式一致，能被addrecord方法直接添加。
+- 【待完成】./dao/DataBaseOperator.py,请帮助完成新添加的两个函数searchRecordValue()及searchRecordWithTwoFieldsValue()，具体说明见文件.
+- 【已完成】./service/Server.py，请参考已经实现的register(),addSelfStock(),buyStock()三个方法，完成剩余5个方法的实现。
 - 【新增】./dao/DataBaseOperator.py，由于Server.py的需要，请帮助完成新添加的两个函数，deleteRecordWithTwoFields()及 searchRecordWithTwoFields()，具体说明见文件。
+- 【新增】请在./dao/DataBaseOperator.py的实现和测试完成后，对server的所有功能编写测试，务必确保mysql数据库按照功能设计工作。
+- 【新增】请结合readme的关于QQBot的配置一节，配置QQBot，保证顺利运行，我们即将开始进行controller层的实现。
 ## 需要注意的
 - 2021-03-19 18：40 xzy
 	- 我修改了活跃订单（alive_orders)在readme和domain中的定义，以判断是买入或是卖出订单。
