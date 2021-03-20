@@ -97,6 +97,8 @@
 - 【新增】./dao/DataBaseOperator.py，由于Server.py的需要，请帮助完成新添加的两个函数，deleteRecordWithTwoFields()及 searchRecordWithTwoFields()，具体说明见文件。
 - 【新增】请在./dao/DataBaseOperator.py的实现和测试完成后，对server的所有功能编写测试，务必确保mysql数据库按照功能设计工作。
 - 【新增】请结合readme的关于QQBot的配置一节，配置QQBot，保证顺利运行，我们即将开始进行controller层的实现。
+- 【新增】请参考./controller/awesome/plugins/Handler.py中对注册和添加自选股函数的实现，完成TODO部分其他六个方法的实现，具体需求见文件
+- 【新增】请根据现有的项目结构，完善readme中“实现”部分的说明
 ## 需要注意的
 - 2021-03-19 18：40 xzy
 	- 我修改了活跃订单（alive_orders)在readme和domain中的定义，以判断是买入或是卖出订单。
