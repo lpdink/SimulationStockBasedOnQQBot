@@ -1,5 +1,5 @@
 from dao.DataBaseOperator import DataBaseOperator
-from domain.AliveOrders import AliveOrder
+from domain.AliveOrder import AliveOrder
 from domain.GlobalVars import GlobalVars
 from domain.StockInformation import StockInformation
 from domain.UserInformation import UserInformation
@@ -60,7 +60,7 @@ class Server:
             else:
                 dbo.addRecord("alive_orders", str(alive_order))
                 dbo.closeConnect()
-                return "购买订单创建成功"
+                return "购买订单创建成功" + str(alive_order.alive_order_index)
 
     # TODO
     # 请参考上面的实现，进行下面的实现
@@ -70,32 +70,78 @@ class Server:
     # 如果查询到，比较查询到的stock_amount和alive_order的stock_amount
     # 如果查询到的较小，返回"卖出订单创建失败，您没有足够的持仓，当前持仓为："+str(查询到玩家持仓的stock_amount)
     # 如果玩家持仓较大，调用add_record方法，将str(alive_order)插入表alive_order中，返回"卖出订单创建成功"+str(订单id)
-    def sellStock(self, stock_index, stock_amount):
-        pass
+    def sellStock(self, alive_order: AliveOrder):
+        dbo = DataBaseOperator()
+        dbo.openConnect()
+        stock_amount = dbo.searchRecordWithTwoFieldsValue("user_holdings", alive_order.stock_index,
+                                                          alive_order.user_id, "stock_amount")
+        if not stock_amount:
+            dbo.closeConnect()
+            return "卖出订单创建失败，您没有足够的持仓，当前持仓为：" + str(alive_order.stock_amount)
+        else:
+            if stock_amount < alive_order.stock_amount:
+                dbo.closeConnect()
+                return "购买订单创建失败，可支配金额不足"
+            else:
+                dbo.addRecord("alive_orders", str(alive_order))
+                dbo.closeConnect()
+                return "卖出订单创建成功" + str(alive_order.alive_order_index)
 
     # 查询玩家持仓:
     # 根据user_id查询表user_holdings，如果不存在，返回"您当前没有持仓"
     # 如果存在，返回所有记录
-    def searchUserHoldings(self, user_id):
-        pass
+    def searchUserHoldings(self, user_holdings: UserHoldings):
+        dbo = DataBaseOperator()
+        dbo.openConnect()
+        userHoldings = dbo.searchRecord("user_holdings", user_holdings.user_id)
+        if not userHoldings:
+            dbo.closeConnect()
+            return "您当前没有持仓"
+        else:
+            dbo.closeConnect()
+            return userHoldings
 
     # 查询玩家订单:
-    # 根据user_id查询表alive_order，如果不存在，返回"您当前没有订单"
+    # 根据user_id查询表alive_orders，如果不存在，返回"您当前没有订单"
     # 如果存在，返回所有记录
-    def searchAliveOrders(self, user_id):
-        pass
+    def searchAliveOrders(self, alive_order: AliveOrder):
+        dbo = DataBaseOperator()
+        dbo.openConnect()
+        aliveOrders = dbo.searchRecord("alive_orders", alive_order.user_id)
+        if not aliveOrders:
+            dbo.closeConnect()
+            return "您当前没有订单"
+        else:
+            dbo.closeConnect()
+            return aliveOrders
 
     # 查询玩家信息:
     # 根据user_id查询表user_information,如果不存在，返回"系统出了bug，真奇怪，我们会把非玩家命令排除的...请联系管理员"
     # 如果存在，返回所有记录
-    def searchUserInformation(self, user_id):
-        pass
+    def searchUserInformation(self, user_information: UserInformation):
+        dbo = DataBaseOperator()
+        dbo.openConnect()
+        userInformation = dbo.searchRecord("user_information", user_information.user_id)
+        if not userInformation:
+            dbo.closeConnect()
+            return "系统出了bug，真奇怪，我们会把非玩家命令排除的...请联系管理员"
+        else:
+            dbo.closeConnect()
+            return userInformation
 
     # 取消订单：
     # 根据user_id和alive_order_index查询表alive_orders,如果不存在，返回"您没有这条订单，请检查订单号"
-    # 如果存在，调用delete方法，删除该记录
-    def cancelOrder(self, user_id, alive_order_index):
-        pass
+    # 如果存在，调用delete方法，删除该记录,返回“取消订单成功”+str(订单id)
+    def cancelOrder(self, alive_order: AliveOrder):
+        dbo = DataBaseOperator()
+        dbo.openConnect()
+        if not dbo.searchRecordWithTwoFields("alive_orders", alive_order.user_id, alive_order.alive_order_index):
+            dbo.closeConnect()
+            return "您没有这条订单，请检查订单号"
+        else:
+            dbo.deleteRecordWithTwoFields("alive_orders", str(alive_order.user_id), str(alive_order.alive_order_index))
+            dbo.closeConnect()
+            return "取消订单成功" + str(alive_order.alive_order_index)
 
 
 if __name__ == "__main__":

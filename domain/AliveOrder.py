@@ -10,6 +10,16 @@ class AliveOrder:
         self.stock_price = kwargs['stock_price']
         self.order_money_amount = kwargs['order_money_amount']
 
+    def __str__(self):
+        return "('{}','{}','{}',{},'{}','{}',{},{},{})".format(self.user_id, self.alive_order_index,
+                                                               self.alive_order_time,
+                                                               self.buy_or_sell,
+                                                               self.stock_index,
+                                                               self.stock_name,
+                                                               self.stock_amount,
+                                                               self.stock_price,
+                                                               self.order_money_amount)
+
 
 if __name__ == "__main__":
     alive_order = AliveOrder(user_id=114514, alive_order_index=110260,

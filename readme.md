@@ -94,9 +94,12 @@
 - ./domain/，参考UserInformation.py中对\__str\__方法的重写，以及readme.md的定义，重写其他四个类的\__str__方法，保证与数据库一条记录的字符串格式一致，能被addrecord方法直接添加。
 - ./dao/DataBaseOperator.py,请帮助完成新添加的两个函数searchRecordValue()及searchRecordWithTwoFieldsValue()，具体说明见文件.
 - ./service/Server.py，请参考已经实现的register(),addSelfStock(),buyStock()三个方法，完成剩余5个方法的实现。
+- 【新增】./dao/DataBaseOperator.py，由于Server.py的需要，请帮助完成新添加的两个函数，deleteRecordWithTwoFields()及 searchRecordWithTwoFields()，具体说明见文件。
 ## 需要注意的
 - 2021-03-19 18：40 xzy
 	- 我修改了活跃订单（alive_orders)在readme和domain中的定义，以判断是买入或是卖出订单。
+- 2021-03-20 11：01 rky
+    - 调整./domain/AliveOrder命名，AliveOrders -> AliveOrder
 ## 使用框架
 - python==3.7（请注意，这是必须的，nonebot要求3.7及以上的版本）
 - PyMySQL==1.0.2

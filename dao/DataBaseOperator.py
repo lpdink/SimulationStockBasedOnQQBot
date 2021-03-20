@@ -57,6 +57,12 @@ class DataBaseOperator:
     def deleteRecord(self, table, primary_key):
         pass
 
+    # 删：删除表table(str)中两个字段组成一个主键的记录
+    # 其中字段A为primary_key_A,字段B为primary_key_B
+    # 成功后打印信息
+    def deleteRecordWithTwoFields(self, table, primary_key_A, primaary_key_B):
+        pass
+
     # 改：将表table(str)中主键（id)为primary_key(str)的记录，修改为record
     # 成功后打印信息
     def changeRecord(self, table, primary_key, record):
@@ -72,11 +78,16 @@ class DataBaseOperator:
     def searchRecordValue(self, table, primary_key, record_head):
         pass
 
+
+    # 查：返回表table(str)中两个字段组成一个主键的记录
+    # 其中字段A为primary_key_A,字段B为primary_key_B
+    def searchRecordWithTwoFields(self, table, primary_key_A, primary_key_B):
+        pass
+
     # 查：返回表table(str)中两个字段组成一个主键的记录的表头为record_head的值
     # 其中字段A为primary_key_A,字段B为primary_key_B
     def searchRecordWithTwoFieldsValue(self,table,primary_key_A,primary_key_B,record_head):
         pass
-
 
 if __name__ == "__main__":
     operator = DataBaseOperator()
