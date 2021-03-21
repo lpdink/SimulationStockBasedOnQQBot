@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_getName(self):
         csvapi.initDic()
-        csvapi.getCodeByName("中国平安")
+        csvapi.getCodeByName("中平安")
 
 if __name__ == '__main__':
     unittest.main()
