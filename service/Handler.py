@@ -24,6 +24,10 @@ class Handler:
     # 请参考register和addSelfStock的定义，完成以下6个方法的定义
     # 注意返回值都是str的
     # 在实例化实体类时，请传入合适的参数，如果参数不属于用户应该传入的，按照类型传入-1，"-1"等等
+    # 这部分逻辑是：
+    # 用传入的参数，实例化domain层的实体类，如果不知道，就用-1代替
+    # 实例化Server()，以调用service层函数
+    # 按照函数名字，调用相同的方法，把第一步创建的对象传进去，返回server的返回值
     async def buyStock(self, user_id: str, stock_index: str, stock_amount: int, stock_price: float) -> str:
         pass
 

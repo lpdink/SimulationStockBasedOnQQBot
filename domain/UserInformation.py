@@ -1,19 +1,25 @@
-class UserInformation:
-    def __init__(self, **kwargs):
-        self.user_id = kwargs['user_id']
-        self.user_name = kwargs['user_name']
-        self.free_money_amount = kwargs['free_money_amount']
-        self.total_money_amount = kwargs['total_money_amount']
-        self.history_money_amount = kwargs['history_money_amount']
+from sqlalchemy import Column, Text, create_engine, Float
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-    def __str__(self):
-        return "('{}','{}',{},{},{})".format(self.user_id, self.user_name,
-                                             self.free_money_amount,
-                                             self.total_money_amount,
-                                             self.history_money_amount)
+BASE = declarative_base()
+
+
+class UserInformation(BASE):
+    __tablename__ = 'user_information'
+    user_id = Column(Text, primary_key=True)
+    user_name = Column(Text)
+    free_money_amount = Column(Float)
+    total_money_amount = Column(Float)
 
 
 if __name__ == "__main__":
-    user_information = UserInformation(user_id=114514, user_name="野兽先辈",
-                                       free_money_amount=5, total_money_amount=50, history_money_amount=500)
-    print(user_information)
+    # 连接MySQL数据库，地址：localhost:3306,账号：root,密码：123,数据库：test
+    engine = create_engine('mysql+pymysql://root:123456@localhost:3306/simulationstock?charset=utf8',
+                           encoding='utf-8')
+    DBSession = sessionmaker(bind=engine)
+
+    session = DBSession()
+    t = session.query(UserInformation).first()
+    print(t)
+    session.close()
