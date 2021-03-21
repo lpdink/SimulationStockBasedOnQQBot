@@ -1,5 +1,5 @@
 import unittest
-import tsAPI.api as api
+import tsAPI.tsapi as api
 from datetime import date
 
 class MyTestCase(unittest.TestCase):
