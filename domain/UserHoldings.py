@@ -1,18 +1,41 @@
-class UserHoldings:
-    def __init__(self, **kwargs):
-        self.user_id = kwargs['user_id']
-        self.stock_index = kwargs['stock_index']
-        self.stock_amount = kwargs['stock_amount']
-        self.bought_price = kwargs['bought_price']
-        self.bought_total_price = kwargs['bought_total_price']
+from sqlalchemy import Column, Text, DECIMAL, create_engine, Float, DateTime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+BASE = declarative_base()
+
+
+class UserHoldings(BASE):
+    __tablename__ = 'user_holdings'
+    user_id = Column(Text, primary_key=True)
+    stock_name = Column(Text, primary_key=True)
+    stock_amount = Column(DECIMAL)
+    bought_price = Column(DECIMAL)
+    bought_total_price = Column(DECIMAL)
+
+    def __init__(self, user_id, stock_name, stock_amount, bought_price, bought_total_price):
+        self.user_id = user_id
+        self.stock_name = stock_name
+        self.stock_amount = stock_amount
+        self.bought_price = bought_price
+        self.bought_total_price = bought_total_price
 
     def __str__(self):
-        return "('{}','{}',{},{},{})".format(self.user_id, self.stock_index,
-                                             self.stock_amount,
-                                             self.bought_price,
-                                             self.bought_total_price)
+        return "股票名:{}\n持有股数:{}\n购买时价格:{}".format(self.stock_name, self.stock_amount,
+                                                  self.bought_total_price)
 
 
 if __name__ == "__main__":
-    user_holdings = UserHoldings(user_id=114514, stock_index=110260,
-                                 stock_amount=5, bought_price=50, bought_total_price=500)
+    # 连接MySQL数据库，地址：localhost:3306,账号：root,密码：123,数据库：test
+    engine = create_engine('mysql+pymysql://root:123456@localhost:3306/simulationstock?charset=utf8',
+                           encoding='utf-8')
+    DBSession = sessionmaker(bind=engine)
+
+    session = DBSession()
+    userholdings = UserHoldings(user_id='326490366', stock_name='壁画银行', stock_amount=50, bought_price=2.5,
+                                bought_total_price=125.0)
+    print(userholdings)
+    session.add(userholdings)
+
+    session.commit()
+    session.close()

@@ -42,12 +42,25 @@ class DataBaseOperator:
         self.session.query(CLASS).filter(head == value).delete()
         self.session.commit()
 
+    def deleteWithTwoFields(self, CLASS, head1, value1, head2, value2):
+        self.session.query(CLASS).filter(head1 == value1, head2 == value2).delete()
+        self.session.commit()
+
     # 改:
     # 需要的参数太多，请需要改操作时，向TODO里添加需求，说明输入输出
 
     # 查：
     def searchAll(self, CLASS):
         return self.session.query(CLASS).all()
+
+    def searchAllWithField(self, CLASS, head, value):
+        return self.session.query(CLASS).filter(head == value).all()
+
+    def searchOne(self, CLASS, head, value):
+        return self.session.query(CLASS).filter(head == value).first()
+
+    def searchOneWithTwoFields(self, CLASS, head1, value1, head2, value2):
+        return self.session.query(CLASS).filter(head1 == value1, head2 == value2).first()
 
 
 if __name__ == "__main__":

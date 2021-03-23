@@ -12,6 +12,15 @@ class UserInformation(BASE):
     free_money_amount = Column(Float)
     total_money_amount = Column(Float)
 
+    def __init__(self, user_id, user_name, free_money_amount, total_money_amount):
+        self.user_id = user_id
+        self.user_name = user_name
+        self.free_money_amount = free_money_amount
+        self.total_money_amount = total_money_amount
+
+    def __str__(self):
+        return "昵称：{}\n可支配金额：{}\n总资产：{}".format(self.user_name, self.free_money_amount, self.total_money_amount)
+
 
 if __name__ == "__main__":
     # 连接MySQL数据库，地址：localhost:3306,账号：root,密码：123,数据库：test
