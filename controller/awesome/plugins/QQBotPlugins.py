@@ -114,7 +114,7 @@ async def addSelfStockArgsParser(session: CommandSession):
 
 # 购买股票
 # 命令格式：！购买股票 股票编号 购买价格 购买数量
-@on_command('购买股票', aliases=('buyStock'),only_to_me=False)
+@on_command('买入', aliases=('buyStock'),only_to_me=False)
 async def buyStock(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
@@ -142,7 +142,7 @@ async def buyStockArgsParser(session: CommandSession):
 
 # 卖出股票
 # 命令格式：！卖出股票 股票编号 卖出价格 卖出数量
-@on_command('卖出股票', aliases=('sellStock'),only_to_me=False)
+@on_command('卖出', aliases=('sellStock'),only_to_me=False)
 async def sellStock(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
@@ -170,7 +170,7 @@ async def sellStockArgsParser(session: CommandSession):
 
 # 查询持仓
 # 命令格式：!查询持仓
-@on_command('查询持仓', aliases=('searchUserHoldings'),only_to_me=False)
+@on_command('持仓', aliases=('searchUserHoldings'),only_to_me=False)
 async def searchUserHoldings(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
@@ -183,7 +183,7 @@ async def searchUserHoldings(session: CommandSession):
 
 # 查询订单
 # 命令格式：!查询订单
-@on_command('查询订单', aliases=('searchAliveOrders'),only_to_me=False)
+@on_command('订单', aliases=('searchAliveOrders'),only_to_me=False)
 async def searchAliveOrders(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
@@ -196,7 +196,7 @@ async def searchAliveOrders(session: CommandSession):
 
 # 查询玩家信息
 # 命令格式：!我的信息
-@on_command('我的信息', aliases=('searchUserInformation'),only_to_me=False)
+@on_command('信息', aliases=('searchUserInformation'),only_to_me=False)
 async def searchUserInformation(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
@@ -249,3 +249,22 @@ async def help(session: CommandSession):
         await session.send(str(response))
     except:
         pass
+
+@on_command('查询', aliases=('search'),only_to_me=False)
+async def searchOneStock(session: CommandSession):
+    try:
+        stock_name = session.get('stock_name')
+        handler = Server()
+        response = await handler.searchOneStock(stock_name)
+        await session.send(str(response))
+    except:
+        pass
+
+
+@searchOneStock.args_parser
+async def searchOneStockArgsParser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    if stripped_arg:
+        session.state['stock_name'] = stripped_arg
+    else:
+        raise Exception('查询股票信息缺少参数')

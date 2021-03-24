@@ -11,17 +11,20 @@ class StockInformation(BASE):
     stock_id = Column(Text, primary_key=True)
     stock_name = Column(Text)
     now_price = Column(Float)
+    up_down_rate = Column(Float)
     flush_time = Column(DateTime)
 
-    def __init__(self, stock_id, stock_name, now_price, flush_time):
+    def __init__(self, stock_id, stock_name, now_price, up_down_rate, flush_time):
         self.stock_id = stock_id
         self.stock_name = stock_name
         self.now_price = now_price
+        self.up_down_rate = up_down_rate
         self.flush_time = flush_time
 
     def __str__(self):
-        return "股票编号：{}\n股票名：{}\n当前价格：{}\n刷新时间：{}".format(self.stock_id, self.stock_name, self.now_price,
-                                                          self.flush_time)
+        return "股票编号：{}\n股票名：{}\n当前价格：{}\n今日涨幅：{}\n刷新时间：{}".format(self.stock_id, self.stock_name, self.now_price,
+                                                                   self.up_down_rate,
+                                                                   self.flush_time)
 
 
 if __name__ == "__main__":
@@ -31,7 +34,8 @@ if __name__ == "__main__":
     DBSession = sessionmaker(bind=engine)
 
     session = DBSession()
-    stockinformation = StockInformation(stock_id='114514', stock_name='海豚证券', now_price=5.28, flush_time=datetime.now())
+    stockinformation = StockInformation(stock_id='114514', stock_name='海豚证券', now_price=5.28,
+                                        flush_time=datetime.now(),up_down_rate=0)
     # session.add(stockinformation)
     print(stockinformation)
 

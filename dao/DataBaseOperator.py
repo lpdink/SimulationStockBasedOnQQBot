@@ -47,7 +47,8 @@ class DataBaseOperator:
         self.session.commit()
 
     # 改:
-    # 需要的参数太多，请需要改操作时，向TODO里添加需求，说明输入输出
+    def update(self):
+        self.session.commit()
 
     # 查：
     def searchAll(self, CLASS):
@@ -75,4 +76,4 @@ if __name__ == "__main__":
     # dbo.delete(UserInformation, UserInformation.user_id, "326490366")
 
     # 查测试
-    print(dbo.searchAll(UserInformation))
+    print(type(dbo.searchOneWithTwoFields(UserInformation,UserInformation.user_id,'326490366',UserInformation.user_name,'肖泽宇')))

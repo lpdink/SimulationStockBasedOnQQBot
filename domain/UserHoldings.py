@@ -22,7 +22,7 @@ class UserHoldings(BASE):
 
     def __str__(self):
         return "股票名:{}\n持有股数:{}\n购买时价格:{}".format(self.stock_name, self.stock_amount,
-                                                  self.bought_total_price)
+                                                  self.bought_price)
 
 
 if __name__ == "__main__":

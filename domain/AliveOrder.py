@@ -17,9 +17,10 @@ class AliveOrder(BASE):
     stock_price = Column(DECIMAL)
     stock_amount = Column(DECIMAL)
     order_money_amount = Column(Float)
+    is_alive = Column(Boolean)
 
     def __init__(self, user_id, alive_order_index, alive_order_time,
-                 buy_or_sell, stock_id, stock_name, stock_price, stock_amount, order_money_amount):
+                 buy_or_sell, stock_id, stock_name, stock_price, stock_amount, order_money_amount,is_alive=True):
         self.user_id = user_id
         self.alive_order_index = alive_order_index
         self.alive_order_time = alive_order_time
@@ -29,6 +30,7 @@ class AliveOrder(BASE):
         self.stock_price = stock_price
         self.stock_amount = stock_amount
         self.order_money_amount = order_money_amount
+        self.is_alive=is_alive
 
     def __str__(self):
         if self.buy_or_sell:
