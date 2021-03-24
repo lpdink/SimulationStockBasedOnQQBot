@@ -7,6 +7,7 @@ from domain.UserHoldings import UserHoldings
 from datetime import datetime
 from FlushThread.FlushStockInformation import flushOneNow
 from FlushThread.FlushStockInformation import flushAliveOrders
+from domain.AllStock import AllStock
 
 begin_money = 500000
 
@@ -15,8 +16,20 @@ begin_money = 500000
 # 返回值要改掉，应该改成str.format()方法
 
 class Server:
+    def outTime(self):
+        today = datetime.now().isoweekday()
+        if today == 6 or today == 7:
+            return True
+        hour = int(datetime.now().strftime('%H'))
+        mint = int(datetime.now().strftime('%M'))
+        now = hour + mint / 60
+        if 9.5 <= now <= 11.5 or 13 <= now <= 15:
+            return False
+        return True
+
     async def register(self, user_id: str, user_name: str) -> str:
         dbo = DataBaseOperator()
+        print(user_id, user_name)
         if dbo.searchOne(UserInformation, UserInformation.user_id, user_id):
             return "您已注册\n" + user_id + "\n" + user_name
         else:
@@ -25,19 +38,36 @@ class Server:
             dbo.add(user)
             return "注册成功\n" + user_id + "\n" + user_name
 
-    async def addSelfStock(self, stock_id: str) -> str:
+    async def addSelfStock(self, stock_name: str) -> str:
+        dbo = DataBaseOperator()
+        obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
+        if obj:
+            return "自选股已经被添加过\n" + + obj.stock_name
+        else:
+            stock_id = dbo.searchOne(AllStock, AllStock.stock_name, stock_name).stock_id
+            new_obj = StockInformation(stock_id=stock_id, stock_name=stock_name, now_price=-1,
+                                       flush_time=datetime.now(),
+                                       up_down_rate=0)
+            dbo.add(new_obj)
+            stock_name = flushOneNow(stock_id)
+            return "自选股添加成功\n" + str(stock_name)
+
+    async def addSelfStockWithID(self, stock_id: str) -> str:
         dbo = DataBaseOperator()
         obj = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
         if obj:
-            return "自选股已经被添加过\n" + obj.stock_id + "\n" + obj.stock_name
+            return "自选股已经被添加过\n" + + obj.stock_name
         else:
-            new_obj = StockInformation(stock_id=stock_id, stock_name="暂未查询", now_price=-1, flush_time=datetime.now(),
+            new_obj = StockInformation(stock_id=stock_id, stock_name="暂未查询", now_price=-1,
+                                       flush_time=datetime.now(),
                                        up_down_rate=0)
             dbo.add(new_obj)
             stock_name = flushOneNow(stock_id)
             return "自选股添加成功\n" + str(stock_name)
 
     async def buyStock(self, user_id: str, stock_name: str, stock_amount: int, stock_price: float) -> str:
+        if self.outTime():
+            return "不在交易时间内"
         dbo = DataBaseOperator()
         if not dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name):
             return "订单失败，请先添加自选股"
@@ -73,12 +103,18 @@ class Server:
     # 如果查询到的较小，返回"卖出订单创建失败，您没有足够的持仓，当前持仓为："+str(查询到玩家持仓的stock_amount)
     # 如果玩家持仓较大，调用add_record方法，将str(alive_order)插入表alive_order中，返回"卖出订单创建成功"+str(订单id)
     async def sellStock(self, user_id: str, stock_name: str, stock_amount: int, stock_price: float) -> str:
+        if self.outTime():
+            return "不在交易时间内"
         dbo = DataBaseOperator()
         stock_amount_obj = dbo.searchOneWithTwoFields(UserHoldings, UserHoldings.stock_name, stock_name,
                                                       UserHoldings.user_id, user_id)
         if not stock_amount_obj:
             return "卖出订单创建失败，您没有购买该支股票"
         else:
+            now = datetime.now().strftime('%Y-%m-%d')
+            bought_time = stock_amount_obj.bought_time.strftime('%Y-%m-%d')
+            if now == bought_time:
+                return "卖出订单创建失败，您必须在购买成功后的T+1日才能卖出"
             if stock_amount > stock_amount_obj.stock_amount:
                 return "卖出订单创建失败，您没有足够的持仓，当前持仓为：" + str(stock_amount_obj.stock_amount)
             else:
@@ -159,9 +195,9 @@ class Server:
     async def searchStock(self):
         dbo = DataBaseOperator()
         objs = dbo.searchAll(StockInformation)
-        rst = "当前的股票信息为：\n"
+        rst = "股票名 价格 涨跌幅 更新时间\n"
         for obj in objs:
-            rst += str(obj) + "-------------\n"
+            rst += str(obj) + "\n--------\n"
         return rst
 
     async def cancelOrder(self, user_id: str, alive_order_index: int) -> str:
@@ -175,9 +211,20 @@ class Server:
                                     alive_order_index)
             return "订单{}删除成功".format(obj.alive_order_index)
 
+    async def deleteSelfStock(self, stock_name: str) -> str:
+        dbo = DataBaseOperator()
+        orders = dbo.searchAllWithField(AliveOrder, AliveOrder.stock_name, stock_name)
+        holdings = dbo.searchAllWithField(UserHoldings, UserHoldings.stock_name, stock_name)
+        if orders or holdings:
+            return "已有订单或持仓，不能删除"
+        else:
+            name = stock_name
+            dbo.delete(StockInformation, StockInformation.stock_name, stock_name)
+            return stock_name + "删除成功"
+
     async def help(self):
-        s = "使用命令:\n！注册：注册您的账户\n！添加自选股 股票编码\n！" \
-            + "买入 股票名 购买价格 购买数量\n" + \
+        s = "使用命令:\n！注册：注册您的账户\n！添加 股票名\n！删除 股票名" \
+            + "！买入 股票名 购买价格 购买数量\n" + \
             "！卖出 股票名 卖出价格 卖出数量\n！持仓\n！订单\n！信息\n！取消订单 订单id" \
             + "\n！查询 股票名" + "\n感谢您的使用"
         return s
@@ -200,4 +247,5 @@ if __name__ == "__main__":
     # print(server.searchAliveOrders('326490366'))
     # print(server.searchUserInformation('326490366'))
     # print(server.cancelOrder('22', 1))
-    print(server.addSelfStock('000553'))
+    # print(server.addSelfStock('000553'))
+    print(server.deleteSelfStock("全新好"))

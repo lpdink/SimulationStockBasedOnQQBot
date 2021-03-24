@@ -3,6 +3,7 @@ from domain.AliveOrder import AliveOrder
 from domain.StockInformation import StockInformation
 from domain.UserInformation import UserInformation
 from domain.UserHoldings import UserHoldings
+from datetime import datetime
 
 
 # 查询alive_orders表，如果为空，返回。
@@ -29,14 +30,15 @@ def flushAliveOrders():
         # True是买入
         if order.buy_or_sell:
             stock = dbo.searchOne(StockInformation, StockInformation.stock_id, order.stock_id)
-            if stock.now_price < order.stock_price:
+            if stock.now_price <= order.stock_price:
                 # 买入
                 user = dbo.searchOne(UserInformation, UserInformation.user_id, order.user_id)
                 service_charge = order.order_money_amount * 0.0003
                 if service_charge < 5:
                     service_charge = 5
+                order.order_money_amount = order.stock_amount * stock.now_price
                 if order.order_money_amount <= user.free_money_amount + service_charge:
-                    user.free_money_amount -= (order.order_money_amount +service_charge)
+                    user.free_money_amount -= (order.order_money_amount + service_charge)
                     order.is_alive = False
                     holdings = dbo.searchOneWithTwoFields(UserHoldings, UserHoldings.user_id, order.user_id,
                                                           UserHoldings.stock_name, order.stock_name)
@@ -46,7 +48,7 @@ def flushAliveOrders():
                         holdings.bought_total_price += order.order_money_amount
                     else:
                         holdings = UserHoldings(order.user_id, order.stock_name, order.stock_amount, order.stock_price,
-                                                order.order_money_amount)
+                                                order.order_money_amount, datetime.now())
                         dbo.add(holdings)
                 dbo.update()
             else:
@@ -60,11 +62,11 @@ def flushAliveOrders():
             if stock.now_price > order.stock_price:
                 holdings = dbo.searchOne(UserHoldings, UserHoldings.user_id, order.user_id)
                 if holdings.stock_amount >= order.stock_amount:
-                    service_charge = order.order_money_amount * 0.0013
+                    service_charge = order.stock_amount * stock.now_price * 0.0013
                     if service_charge < 5:
                         service_charge = 5
                     user = dbo.searchOne(UserInformation, UserInformation.user_id, order.user_id)
-                    user.free_money_amount += order.order_money_amount - service_charge
+                    user.free_money_amount += stock.now_price * order.stock_amount - service_charge
                     holdings.stock_amount -= order.stock_amount
                     order.is_alive = False
                 else:

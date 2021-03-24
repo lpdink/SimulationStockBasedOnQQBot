@@ -12,17 +12,19 @@ class UserHoldings(BASE):
     stock_amount = Column(DECIMAL)
     bought_price = Column(DECIMAL)
     bought_total_price = Column(DECIMAL)
+    bought_time = Column(DateTime)
 
-    def __init__(self, user_id, stock_name, stock_amount, bought_price, bought_total_price):
+    def __init__(self, user_id, stock_name, stock_amount, bought_price, bought_total_price, bought_time):
         self.user_id = user_id
         self.stock_name = stock_name
         self.stock_amount = stock_amount
         self.bought_price = bought_price
         self.bought_total_price = bought_total_price
+        self.bought_time = bought_time
 
     def __str__(self):
-        return "股票名:{}\n持有股数:{}\n购买时价格:{}".format(self.stock_name, self.stock_amount,
-                                                  self.bought_price)
+        return "股票名:{}\n持有股数:{}\n购买时价格:{}\n购买时间:{}".format(self.stock_name, self.stock_amount,
+                                                           self.bought_price, self.bought_time)
 
 
 if __name__ == "__main__":

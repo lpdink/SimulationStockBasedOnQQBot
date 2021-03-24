@@ -22,9 +22,9 @@ class StockInformation(BASE):
         self.flush_time = flush_time
 
     def __str__(self):
-        return "股票编号：{}\n股票名：{}\n当前价格：{}\n今日涨幅：{}\n刷新时间：{}".format(self.stock_id, self.stock_name, self.now_price,
-                                                                   self.up_down_rate,
-                                                                   self.flush_time)
+        return "{} {} {}% {}".format(self.stock_name, self.now_price,
+                                     self.up_down_rate,
+                                     self.flush_time)
 
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     session = DBSession()
     stockinformation = StockInformation(stock_id='114514', stock_name='海豚证券', now_price=5.28,
-                                        flush_time=datetime.now(),up_down_rate=0)
+                                        flush_time=datetime.now(), up_down_rate=0)
     # session.add(stockinformation)
     print(stockinformation)
 

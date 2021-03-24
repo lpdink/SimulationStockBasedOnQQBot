@@ -84,7 +84,10 @@ async def register(session: CommandSession):
         handler = Server()
         user_id = str(session.event['sender']['user_id'])
         user_name = str(session.event['sender']['nickname'])
-        response = await handler.register(user_id=user_id, user_name=user_name)
+        try:
+            response = await handler.register(user_id=user_id, user_name=user_name)
+        except:
+            response = await handler.register(user_id=user_id, user_name="我的名字有问题")
         await session.send(str(response))
     except:
         pass
@@ -92,12 +95,12 @@ async def register(session: CommandSession):
 
 # 添加自选股
 # 命令格式：!添加自选股 123456
-@on_command('添加自选股', aliases=('addSelfStock'),only_to_me=False)
+@on_command('添加', aliases=('addSelfStock'),only_to_me=False)
 async def addSelfStock(session: CommandSession):
     try:
-        stock_id = session.get('stock_id')
+        stock_name = session.get('stock_name')
         handler = Server()
-        response = await handler.addSelfStock(stock_id)
+        response = await handler.addSelfStock(stock_name)
         await session.send(str(response))
     except:
         pass
@@ -107,9 +110,49 @@ async def addSelfStock(session: CommandSession):
 async def addSelfStockArgsParser(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if stripped_arg:
+        session.state['stock_name'] = stripped_arg
+    else:
+        raise Exception('添加自选股命令缺少参数')
+
+@on_command('用编号添加', aliases=('addSelfStockWithID'),only_to_me=False)
+async def addSelfStockWithID(session: CommandSession):
+    try:
+        stock_id = session.get('stock_id')
+        handler = Server()
+        response = await handler.addSelfStockWithID(stock_id)
+        await session.send(str(response))
+    except:
+        pass
+
+
+@addSelfStockWithID.args_parser
+async def addSelfStockWithIDArgsParser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    if stripped_arg:
         session.state['stock_id'] = stripped_arg
     else:
         raise Exception('添加自选股命令缺少参数')
+
+# 删除自选股
+# 命令格式：!删除 123456
+@on_command('删除', aliases=('deleteSelfStock'),only_to_me=False)
+async def deleteSelfStock(session: CommandSession):
+    try:
+        stock_name = session.get('stock_name')
+        handler = Server()
+        response = await handler.deleteSelfStock(stock_name)
+        await session.send(str(response))
+    except:
+        pass
+
+
+@deleteSelfStock.args_parser
+async def deleteSelfStockArgsParser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    if stripped_arg:
+        session.state['stock_name'] = stripped_arg
+    else:
+        raise Exception('删除自选股命令缺少参数')
 
 
 # 购买股票
