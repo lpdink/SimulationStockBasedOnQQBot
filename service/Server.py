@@ -157,6 +157,7 @@ class Server:
     async def searchAliveOrders(self, user_id: str) -> str:
         dbo = DataBaseOperator()
         dbo.delete(AliveOrder, AliveOrder.is_alive, False)
+        flushAliveOrders()
         aliveorders = dbo.searchAllWithField(AliveOrder, AliveOrder.user_id, user_id)
         if not aliveorders:
             return "您当前没有有效订单"
@@ -231,6 +232,8 @@ class Server:
 
     async def searchOneStock(self, stock_name):
         dbo = DataBaseOperator()
+        stock_id = dbo.searchOne(AllStock,AllStock.stock_name,stock_name).stock_id
+        flushOneNow(stock_id)
         obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
         if obj:
             return str(obj)
