@@ -1,7 +1,7 @@
 import threading
 from dao.DataBaseOperator import DataBaseOperator
 from domain.StockInformation import StockInformation
-from time import time
+import time
 from datetime import datetime
 import tushare as ts
 from FlushThread.FlushAliveOrders import flushAliveOrders
@@ -15,7 +15,7 @@ global_flush_time = 3
 # 结束后，设置定时器线程，global_flush_time*60秒后再次调用自身
 def flushStockInformation():
     dbo = DataBaseOperator()
-    dbo.delete(StockInformation, StockInformation.stock_name, "API缺少该股信息")
+    # dbo.delete(StockInformation, StockInformation.stock_name, "API缺少该股信息")
     stock_list = dbo.searchAll(StockInformation)
     for stock in stock_list:
         try:
@@ -29,19 +29,17 @@ def flushStockInformation():
             except:
                 stock.up_down_rate = 0
         except:
-            stock.stock_name = "API缺少该股信息"
-            stock.now_price = 9999
-            stock.flush_time = datetime.now()
-            stock.up_down_rate = 0
+            pass
         dbo.update()
+        time.sleep(3)
     flushAliveOrders()
     global timer
     timer = threading.Timer(global_flush_time * 60, flushStockInformation)
+    timer.start()
 
 
 def flushOneNow(stock_id):
     dbo = DataBaseOperator()
-    dbo.delete(StockInformation, StockInformation.stock_name, "API缺少该股信息")
     stock = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
     try:
         df = ts.get_realtime_quotes(stock.stock_id)
@@ -50,16 +48,13 @@ def flushOneNow(stock_id):
         stock.flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
         try:
             stock.up_down_rate = 100 * (float(df['price'][0]) - float(df['pre_close'][0])) / float(
-                df['pre_close'][0])
+                    df['pre_close'][0])
         except:
             stock.up_down_rate = 0
     except:
-        stock.stock_name = "API缺少该股信息"
-        stock.now_price = 9999
-        stock.flush_time = datetime.now()
-        stock.up_down_rate = 0
+        return False
     dbo.update()
-    return stock.stock_name
+    return True
 
 
 if __name__ == "__main__":

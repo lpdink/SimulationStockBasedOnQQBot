@@ -75,9 +75,8 @@
 			- 类的方法
 			- 类的属性
 ## TODO
-- 请结合readme的关于QQBot的配置一节，配置QQBot，保证顺利运行。
-- 【新增】请参考./domain/UserInformation.py和StockInformation.py，以及./dao/simulationstock.sql的数据定义，修改domain下其余两个实体类的代码。（不包括GlobalVars)
-- 【新增】请结合./service/Handler.py和./service/Server.py，重写Server.py。要求各个函数，使用Handler.py中的参数，返回值取Server.py中的返回值，调用更新之后的./dao/DataBaseOperator.py中的方法。缺少方法的，请向TODO中添加需求。请在进行本需求时，提前观察dao层提供功能的特点。
+- V1.0大版本已完成，进入测试修复期，请持续关注。
+- 请结合当前系统结构，修改readme在设计和实现部分的描述。
 
 ## 需要注意的
 - 2021-03-19 18：40 xzy
@@ -86,6 +85,8 @@
     - 调整./domain/AliveOrder命名，AliveOrders -> AliveOrder
 - 2021-03-21 22：38 xzy：
 	- 由于dao层转为使用ORM的方法，整个项目结构发生了重大的变化。重写server.py的需求不够清晰，可以等待我后续进行详细定义。
+- 2021-03-26 15：07 xzy
+	- 1.0版本已完成，readme文档暂未更新，部分内容可能过时。
 ## 使用框架
 - python==3.7（请注意，这是必须的，nonebot要求3.7及以上的版本）
 - PyMySQL==1.0.2
