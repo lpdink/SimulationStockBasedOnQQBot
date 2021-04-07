@@ -48,7 +48,7 @@ def flushOneNow(stock_id):
         stock.flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
         try:
             stock.up_down_rate = 100 * (float(df['price'][0]) - float(df['pre_close'][0])) / float(
-                    df['pre_close'][0])
+                df['pre_close'][0])
         except:
             stock.up_down_rate = 0
     except:

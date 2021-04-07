@@ -8,6 +8,7 @@ from datetime import datetime
 from FlushThread.FlushStockInformation import flushOneNow
 from FlushThread.FlushStockInformation import flushAliveOrders
 from domain.AllStock import AllStock
+import tushare as ts
 
 begin_money = 500000
 
@@ -51,22 +52,36 @@ class Server:
             else:
                 return "自选股添加失败，API缺少该股信息"
 
-    async def addSelfStockWithID(self, stock_id: str) -> str:
+    def addSelfStockWithID(self, stock_id: str) -> str:
         dbo = DataBaseOperator()
         obj = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
         if obj:
-            return "自选股已经被添加过\n" + + obj.stock_name
+            return "自选股已经被添加过\n" + obj.stock_name
         else:
-            stock = dbo.searchOne(AllStock, AllStock.stock_id, stock_id)
-            if stock:
-                new_obj = StockInformation(stock_id=stock_id, stock_name=stock.stock_name, now_price=-1,
-                                           flush_time=datetime.now(),
-                                           up_down_rate=0)
+            try:
+                df = ts.get_realtime_quotes(stock_id)
+                stock_name = df['name'][0]
+                now_price = float(df['price'])
+                flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
+            except:
+                return "API缺少该股信息"
+            try:
+                up_down_rate = 100 * (float(df['price'][0]) - float(df['pre_close'][0])) / float(
+                    df['pre_close'][0])
+            except:
+                up_down_rate = 0
+            new_obj = StockInformation(stock_id=stock_id, stock_name=stock_name, now_price=now_price,
+                                       flush_time=flush_time,
+                                       up_down_rate=up_down_rate)
+            try:
                 dbo.add(new_obj)
-                flushOneNow(stock_id)
-                return "自选股添加成功\n" + str(stock.stock_name)
-            else:
-                return "自选股添加失败，API缺少该股信息"
+            except:
+                pass
+            # 下面，添加到all_stock中
+            new_stock = AllStock(stock_id=stock_id, stock_name=stock_name)
+            dbo.add(new_stock)
+            flushOneNow(stock_id)
+            return "自选股添加成功\n" + str(stock_name)
 
     async def buyStock(self, user_id: str, stock_name: str, stock_amount: int, stock_price: float) -> str:
         if self.outTime():
@@ -231,17 +246,23 @@ class Server:
         if orders or holdings:
             return "已有订单或持仓，不能删除"
         else:
-            dbo.delete(StockInformation, StockInformation.stock_name, stock_name)
-            return stock_name + "删除成功"
+            if dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name):
+                dbo.delete(StockInformation, StockInformation.stock_name, stock_name)
+                return stock_name + "删除成功"
+            else:
+                return "您要删除的自选股不存在，喂！不要乱玩这个功能！"
 
     async def help(self):
-        s = "使用命令:\n！注册\n！添加 股票名\n！删除 股票名" \
+        s = "使用命令:\n！注册\n！添加 股票名\n！用编号添加 股票编号\n！删除 股票名\n" \
             + "！买入 股票名 购买价格 购买数量\n" + \
             "！卖出 股票名 卖出价格 卖出数量\n！持仓\n！订单\n！信息\n！取消订单 订单id" \
-            + "\n！查询 股票名" + "\n感谢您的使用"
+            + "\n！查询 股票名\n！用编号查询 股票编号" + "\n感谢您的使用"
         return s
 
-    async def searchOneStock(self, stock_name):
+    async def dzyPa(self):
+        return "dzy爬"
+
+    def searchOneStock(self, stock_name):
         dbo = DataBaseOperator()
         try:
             stock_id = dbo.searchOne(AllStock, AllStock.stock_name, stock_name).stock_id
@@ -250,6 +271,19 @@ class Server:
         obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
         if obj:
             if flushOneNow(stock_id):
+                obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
+                return str(obj)
+            else:
+                return "API查询失败，请稍后再次尝试"
+        else:
+            return "查询失败，请先添加自选股"
+
+    async def searchOneStockWithID(self, stock_id):
+        dbo = DataBaseOperator()
+        obj = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
+        if obj:
+            if flushOneNow(stock_id):
+                obj = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
                 return str(obj)
             else:
                 return "API查询失败，请稍后再次尝试"
@@ -270,3 +304,5 @@ if __name__ == "__main__":
     # print(server.buyStock('326490366','中国平安',1000,79.45))
     # print(server.searchUserInformation('326490366'))
     # print(server.addSelfStock('平安银行'))
+    print(server.addSelfStockWithID('513100'))
+    print(server.searchOneStock("纳指ETF"))
