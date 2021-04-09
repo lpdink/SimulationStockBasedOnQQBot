@@ -43,7 +43,7 @@ def flushOneNow(stock_id):
     stock = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
     try:
         df = ts.get_realtime_quotes(stock.stock_id)
-        stock.stock_name = df['name'][0]
+        stock.stock_name = df['name'][0].replace(' ', '')
         stock.now_price = float(df['price'])
         stock.flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
         try:
@@ -51,9 +51,9 @@ def flushOneNow(stock_id):
                 df['pre_close'][0])
         except:
             stock.up_down_rate = 0
+        dbo.update()
     except:
         return False
-    dbo.update()
     return True
 
 

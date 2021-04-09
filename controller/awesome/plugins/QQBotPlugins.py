@@ -346,3 +346,12 @@ async def dzyPa(session: CommandSession):
         await session.send(str(response))
     except:
         pass
+
+@on_command('BTC', aliases=('B'), only_to_me=False)
+async def searchOneStockWithID(session: CommandSession):
+    try:
+        handler = Server()
+        response = await handler.getBTC()
+        await session.send(str(response))
+    except:
+        pass

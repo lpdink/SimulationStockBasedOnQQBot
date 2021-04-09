@@ -9,8 +9,11 @@ from FlushThread.FlushStockInformation import flushOneNow
 from FlushThread.FlushStockInformation import flushAliveOrders
 from domain.AllStock import AllStock
 import tushare as ts
+import requests
+import json
 
 begin_money = 500000
+last_BTC = 58313.255
 
 
 class Server:
@@ -52,7 +55,7 @@ class Server:
             else:
                 return "自选股添加失败，API缺少该股信息"
 
-    def addSelfStockWithID(self, stock_id: str) -> str:
+    async def addSelfStockWithID(self, stock_id: str) -> str:
         dbo = DataBaseOperator()
         obj = dbo.searchOne(StockInformation, StockInformation.stock_id, stock_id)
         if obj:
@@ -60,7 +63,7 @@ class Server:
         else:
             try:
                 df = ts.get_realtime_quotes(stock_id)
-                stock_name = df['name'][0]
+                stock_name = df['name'][0].replace(' ', '')
                 now_price = float(df['price'])
                 flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
             except:
@@ -262,7 +265,7 @@ class Server:
     async def dzyPa(self):
         return "dzy爬"
 
-    def searchOneStock(self, stock_name):
+    async def searchOneStock(self, stock_name):
         dbo = DataBaseOperator()
         try:
             stock_id = dbo.searchOne(AllStock, AllStock.stock_name, stock_name).stock_id
@@ -290,6 +293,26 @@ class Server:
         else:
             return "查询失败，请先添加自选股"
 
+    async def getBTC(self):
+        try:
+            r = requests.get('https://api.coindesk.com/v1/bpi/currentprice.json')
+            # old_r = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
+            # old_day_data = old_r.json()['bpi']
+            # p_list = [key for key in old_day_data.values()]
+            # last_price = float(p_list[-1])
+            # print(last_price)
+            global last_BTC
+            now_price = float(r.json()['bpi']['USD']['rate_float'])
+            res = "BTC-USD：{:.3f}\n距上次查询幅度：{:.3f}%".format(now_price, 100 * (now_price - last_BTC) / last_BTC)
+            if 100 * abs(last_BTC - now_price) / last_BTC > 3:
+                last_BTC = now_price
+                return "与上一次查询变化超过3%！\n" + res
+            else:
+                last_BTC = now_price
+                return res
+        except:
+            return "ERROR: 请稍后尝试"
+
 
 if __name__ == "__main__":
     server = Server()
@@ -304,5 +327,4 @@ if __name__ == "__main__":
     # print(server.buyStock('326490366','中国平安',1000,79.45))
     # print(server.searchUserInformation('326490366'))
     # print(server.addSelfStock('平安银行'))
-    print(server.addSelfStockWithID('513100'))
-    print(server.searchOneStock("纳指ETF"))
+    print(server.addSelfStock("远望谷"))
