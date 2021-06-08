@@ -1,5 +1,6 @@
 from nonebot import on_command, CommandSession
 from service.Server import Server
+from aiocqhttp import MessageSegment
 
 '''
 QQBotPlugins将定义所有的命令处理器，并调用Handler中定义的处理程序进行处理，发送返回结果。
@@ -347,11 +348,60 @@ async def dzyPa(session: CommandSession):
     except:
         pass
 
+
 @on_command('BTC', aliases=('B'), only_to_me=False)
-async def searchOneStockWithID(session: CommandSession):
+async def getBTC(session: CommandSession):
     try:
         handler = Server()
         response = await handler.getBTC()
         await session.send(str(response))
     except:
         pass
+
+
+@on_command('crypto', aliases=('C', 'c', 'cry'), only_to_me=False)
+async def getCryPto(session: CommandSession):
+    try:
+        handler = Server()
+        response = await handler.getCryPto()
+        await session.send(str(response))
+    except:
+        pass
+
+
+@on_command('排名', aliases=('rank'), only_to_me=False)
+async def rank(session: CommandSession):
+    try:
+        handler = Server()
+        response = await handler.rank()
+        await session.send(str(response))
+    except:
+        pass
+
+
+@on_command('K', aliases=('k'), only_to_me=False)
+async def drawK(session: CommandSession):
+    try:
+        stock_name = session.get('stock_name')
+        days = session.get('days')
+        handler = Server()
+        response = await handler.drawK(stock_name, days)
+        if not response:
+            await session.send(str(response))
+        else:
+            print("enter send")
+            seq = MessageSegment.image("Kline.png")
+            await session.send(seq)
+    except:
+        pass
+
+
+@drawK.args_parser
+async def drawKArgsParser(session: CommandSession):
+    stripped_arg = session.current_arg_text.strip()
+    if stripped_arg:
+        args = stripped_arg.split()
+        session.state['stock_name'] = args[0]
+        session.state['days'] = args[1]
+    else:
+        raise Exception('K线绘制缺少参数')

@@ -60,7 +60,9 @@ def flushAliveOrders():
         else:
             stock = dbo.searchOne(StockInformation, StockInformation.stock_id, order.stock_id)
             if stock.now_price > order.stock_price:
-                holdings = dbo.searchOne(UserHoldings, UserHoldings.user_id, order.user_id)
+                # holdings = dbo.searchOne(UserHoldings, UserHoldings.user_id, order.user_id)
+                holdings = dbo.searchOneWithTwoFields(UserHoldings, UserHoldings.user_id, order.user_id,
+                                                      UserHoldings.stock_name, order.stock_name)
                 if holdings.stock_amount >= order.stock_amount:
                     service_charge = order.stock_amount * stock.now_price * 0.0013
                     if service_charge < 5:

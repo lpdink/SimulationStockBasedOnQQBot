@@ -20,7 +20,7 @@ def flushStockInformation():
     for stock in stock_list:
         try:
             df = ts.get_realtime_quotes(stock.stock_id)
-            stock.stock_name = df['name'][0]
+            # stock.stock_name = df['name'][0]
             stock.now_price = float(df['price'])
             stock.flush_time = datetime.strptime(df['date'][0] + " " + df['time'][0], '%Y-%m-%d %H:%M:%S')
             try:

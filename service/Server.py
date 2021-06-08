@@ -11,6 +11,16 @@ from domain.AllStock import AllStock
 import tushare as ts
 import requests
 import json
+import datetime
+
+from dao.DataBaseOperator import DataBaseOperator
+from domain.NAllStock import NAllStock
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec  # 分割子图
+from mplfinance.original_flavor import candlestick2_ochl
 
 begin_money = 500000
 last_BTC = 58313.255
@@ -39,8 +49,11 @@ class Server:
             return "注册成功\n" + user_id + "\n" + user_name
 
     async def addSelfStock(self, stock_name: str) -> str:
-        dbo = DataBaseOperator()
-        obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
+        try:
+            dbo = DataBaseOperator()
+            obj = dbo.searchOne(StockInformation, StockInformation.stock_name, stock_name)
+        except:
+            return ""
         if obj:
             return "自选股已经被添加过\n" + obj.stock_name
         else:
@@ -296,11 +309,6 @@ class Server:
     async def getBTC(self):
         try:
             r = requests.get('https://api.coindesk.com/v1/bpi/currentprice.json')
-            # old_r = requests.get('https://api.coindesk.com/v1/bpi/historical/close.json')
-            # old_day_data = old_r.json()['bpi']
-            # p_list = [key for key in old_day_data.values()]
-            # last_price = float(p_list[-1])
-            # print(last_price)
             global last_BTC
             now_price = float(r.json()['bpi']['USD']['rate_float'])
             res = "BTC-USD：{:.3f}\n距上次查询幅度：{:.3f}%".format(now_price, 100 * (now_price - last_BTC) / last_BTC)
@@ -312,6 +320,143 @@ class Server:
                 return res
         except:
             return "ERROR: 请稍后尝试"
+
+    async def getCryPto(self):
+        try:
+            try:
+                r = requests.get('https://api.binancezh.co/api/v3/ticker/price', timeout=3)
+            except:
+                return "对API请求超时，你不够帅气"
+            data = r.json()
+            doge, ETH, BNB, BETHETH, BTCUSDT = 0, 0, 0, 0, 0
+            for item in data:
+                if item["symbol"] == "DOGEUSDT":
+                    doge = float(item["price"])
+                if item["symbol"] == "ETHUSDT":
+                    ETH = float(item["price"])
+                if item["symbol"] == "BNBUSDT":
+                    BNB = float(item["price"])
+                if item["symbol"] == "BETHETH":
+                    BETHETH = float(item['price'])
+                if item["symbol"] == "BTCUSDT":
+                    BTCUSDT = float(item["price"])
+            d = doge
+            di = 0.0802888
+            e = ETH
+            ei = 1937.6
+            pft = (((d - di) / di + (e - ei) / ei) / 2) * 100
+            res = "DOGE：{:.6g}\nETH：{:.6g}\nBNB：{:.6g}\nBETH：{:.4g}\nBTC：{:.6g}\npft：{:.1f}%".format(doge, ETH, BNB,
+                                                                                                     BETHETH,
+                                                                                                     BTCUSDT, pft)
+            return res
+        except:
+            return "ERROR: 请稍后尝试"
+
+    async def rank(self):
+        try:
+            dbo = DataBaseOperator()
+            users = dbo.searchAll(UserInformation)
+            for i in range(len(users)):
+                user = users[i]
+                holdings = dbo.searchAllWithField(UserHoldings, UserHoldings.user_id, user.user_id)
+                user.total_money_amount = 0
+                for holding in holdings:
+                    try:
+                        price_now = dbo.searchOne(StockInformation, StockInformation.stock_name,
+                                                  holding.stock_name).now_price
+                        user.total_money_amount += holding.stock_amount * price_now
+                    except:
+                        return "查询个人信息失败，自选股被非法删除，请联系管理员"
+                user.total_money_amount += user.free_money_amount
+                dbo.update()
+            users.sort(reverse=True, key=(lambda user: user.total_money_amount))
+            rst = ""
+            for i in range(0, len(users)):
+                rst += "{}. {} {}\n".format(i + 1, users[i].user_name, users[i].total_money_amount)
+            return rst
+        except:
+            return "连接数据库失败，请稍后重试"
+
+    async def drawK(self, stock_name: str, deltatime: str):
+        print(" i am here")
+        deltatime = int(deltatime)
+        dbo = DataBaseOperator()
+        now = datetime.datetime.now().strftime('%Y%m%d')
+        last = (datetime.datetime.now() - datetime.timedelta(days=deltatime)).strftime('%Y%m%d')
+        print(now, last)
+        pro = ts.pro_api('d2144df3d2c4f703454e331d9c95c0dc8685101ca04795d337cd5de1')
+        try:
+            code = dbo.searchOne(NAllStock, NAllStock.stock_name, stock_name).stock_id
+        except:
+            return "找不到该股票"
+        try:
+            df = pro.daily(ts_code=code, start_date=last, end_date=now)
+        except:
+            return "API错误：请稍后尝试"
+        df_stockload = df[["trade_date", "open", "high", "low", "close", "vol"]]
+        df_stockload = df_stockload.iloc[::-1]
+
+        df_stockload['trade_date'] = pd.to_datetime(df_stockload['trade_date'])
+        df_stockload = df_stockload.set_index('trade_date')
+
+        np.seterr(divide='ignore', invalid='ignore')  # 忽略warning
+        # plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
+        plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+        fig = plt.figure(figsize=(20, 12), dpi=100, facecolor="white")  # 创建fig对象
+
+        gs = gridspec.GridSpec(2, 1, left=0.08, bottom=0.15, right=0.99, top=0.96, wspace=None, hspace=0,
+                               height_ratios=[3.5, 1])
+        graph_KAV = fig.add_subplot(gs[0, :])
+        graph_VOL = fig.add_subplot(gs[1, :])
+
+        # 绘制K线图
+        candlestick2_ochl(graph_KAV, df_stockload.open, df_stockload.close, df_stockload.high, df_stockload.low,
+                          width=0.5,
+                          colorup='r', colordown='g')  # 绘制K线走势
+
+        # 绘制移动平均线图
+        df_stockload['Ma5'] = df_stockload.close.rolling(
+            window=5).mean()  # pd.rolling_mean(df_stockload.close,window=20)
+        df_stockload['Ma10'] = df_stockload.close.rolling(
+            window=10).mean()  # pd.rolling_mean(df_stockload.close,window=30)
+        df_stockload['Ma20'] = df_stockload.close.rolling(
+            window=20).mean()  # pd.rolling_mean(df_stockload.close,window=60)
+        df_stockload['Ma30'] = df_stockload.close.rolling(
+            window=30).mean()  # pd.rolling_mean(df_stockload.close,window=60)
+        df_stockload['Ma60'] = df_stockload.close.rolling(
+            window=60).mean()  # pd.rolling_mean(df_stockload.close,window=60)
+
+        graph_KAV.plot(np.arange(0, len(df_stockload.index)), df_stockload['Ma5'], 'black', label='M5', lw=1.0)
+        graph_KAV.plot(np.arange(0, len(df_stockload.index)), df_stockload['Ma10'], 'green', label='M10', lw=1.0)
+        graph_KAV.plot(np.arange(0, len(df_stockload.index)), df_stockload['Ma20'], 'blue', label='M20', lw=1.0)
+        graph_KAV.plot(np.arange(0, len(df_stockload.index)), df_stockload['Ma30'], 'pink', label='M30', lw=1.0)
+        graph_KAV.plot(np.arange(0, len(df_stockload.index)), df_stockload['Ma60'], 'yellow', label='M60', lw=1.0)
+
+        # 添加网格
+        graph_KAV.grid()
+
+        graph_KAV.legend(loc='best')
+        graph_KAV.set_title("K")
+        graph_KAV.set_ylabel(u"价格")
+        graph_KAV.set_xlim(0, len(df_stockload.index))  # 设置一下x轴的范围
+
+        # 绘制成交量图
+        graph_VOL.bar(np.arange(0, len(df_stockload.index)), df_stockload.vol,
+                      color=['g' if df_stockload.open[x] > df_stockload.close[x] else 'r' for x in
+                             range(0, len(df_stockload.index))])
+        graph_VOL.set_ylabel(u"成交量")
+        graph_VOL.set_xlim(0, len(df_stockload.index))  # 设置一下x轴的范围
+        graph_VOL.set_xticks(range(0, len(df_stockload.index), 15))  # X轴刻度设定 每15天标一个日期
+
+        for label in graph_KAV.xaxis.get_ticklabels():
+            label.set_visible(False)
+
+        for label in graph_VOL.xaxis.get_ticklabels():
+            label.set_visible(False)
+
+        plt.savefig('/home/lpdink/home/lpdink/test/resource/data/images/Kline.png')
+        print("save fig done...")
+        return True
 
 
 if __name__ == "__main__":
@@ -327,4 +472,5 @@ if __name__ == "__main__":
     # print(server.buyStock('326490366','中国平安',1000,79.45))
     # print(server.searchUserInformation('326490366'))
     # print(server.addSelfStock('平安银行'))
-    print(server.addSelfStock("远望谷"))
+    # print(server.addSelfStock("远望谷"))
+    print(server.drawK("平安银行","365"))

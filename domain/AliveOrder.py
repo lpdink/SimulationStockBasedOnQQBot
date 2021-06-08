@@ -5,7 +5,6 @@ from datetime import datetime
 
 BASE = declarative_base()
 
-
 class AliveOrder(BASE):
     __tablename__ = 'alive_orders'
     user_id = Column(Text, primary_key=True)
@@ -18,6 +17,7 @@ class AliveOrder(BASE):
     stock_amount = Column(DECIMAL)
     order_money_amount = Column(Float)
     is_alive = Column(Boolean)
+
 
     def __init__(self, user_id, alive_order_index, alive_order_time,
                  buy_or_sell, stock_id, stock_name, stock_price, stock_amount, order_money_amount,is_alive=True):
