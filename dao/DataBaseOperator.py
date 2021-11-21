@@ -4,10 +4,11 @@ from sqlalchemy import Column, String, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from domain.UserInformation import UserInformation
+from domain.AllStock import AllStock
 
 config = configparser.ConfigParser()
 # 注意修改绝对路径，不要使用相对路径，否则在import时会keyError
-config_file = 'E:/learn/2103/SimulationStockBasedOnQQBot/dao/dataBaseConfig.ini'
+config_file = 'E:\\learn\\2103\\SimulationStockBasedOnQQBot\\dao\\dataBaseConfig.ini'
 config.read(config_file, encoding='utf-8')
 user = config['connect_mysql']['user']
 password = config['connect_mysql']['password']
@@ -60,12 +61,16 @@ class DataBaseOperator:
     def searchOne(self, CLASS, head, value):
         return self.session.query(CLASS).filter(head == value).first()
 
+    def searchLike(self, CLASS, head, value):
+        return self.session.query(CLASS).filter(head.like(value)).all()
+
     def searchOneWithTwoFields(self, CLASS, head1, value1, head2, value2):
         return self.session.query(CLASS).filter(head1 == value1, head2 == value2).first()
 
 
 if __name__ == "__main__":
     dbo = DataBaseOperator()
+    print(dbo.searchLike(AllStock,AllStock.stock_name,"%银行%"))
 
     # 增测试
     # user = UserInformation(user_id='326490366', user_name='小布丁',
@@ -76,4 +81,6 @@ if __name__ == "__main__":
     # dbo.delete(UserInformation, UserInformation.user_id, "326490366")
 
     # 查测试
-    print(type(dbo.searchOneWithTwoFields(UserInformation,UserInformation.user_id,'326490366',UserInformation.user_name,'肖泽宇')))
+    # print(type(
+    # dbo.searchOneWithTwoFields(UserInformation, UserInformation.user_id, '326490366', UserInformation.user_name,
+    #                           '肖泽宇')))

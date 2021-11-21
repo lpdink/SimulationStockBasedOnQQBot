@@ -94,81 +94,16 @@ async def register(session: CommandSession):
         pass
 
 
-# 添加自选股
-# 命令格式：!添加自选股 123456
-@on_command('添加', aliases=('addSelfStock'), only_to_me=False)
-async def addSelfStock(session: CommandSession):
-    try:
-        stock_name = session.get('stock_name')
-        handler = Server()
-        response = await handler.addSelfStock(stock_name)
-        await session.send(str(response))
-    except:
-        pass
-
-
-@addSelfStock.args_parser
-async def addSelfStockArgsParser(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()
-    if stripped_arg:
-        session.state['stock_name'] = stripped_arg
-    else:
-        raise Exception('添加自选股命令缺少参数')
-
-
-@on_command('用编号添加', aliases=('addSelfStockWithID'), only_to_me=False)
-async def addSelfStockWithID(session: CommandSession):
-    try:
-        stock_id = session.get('stock_id')
-        handler = Server()
-        response = await handler.addSelfStockWithID(stock_id)
-        await session.send(str(response))
-    except:
-        pass
-
-
-@addSelfStockWithID.args_parser
-async def addSelfStockWithIDArgsParser(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()
-    if stripped_arg:
-        session.state['stock_id'] = stripped_arg
-    else:
-        raise Exception('添加自选股命令缺少参数')
-
-
-# 删除自选股
-# 命令格式：!删除 123456
-@on_command('删除', aliases=('deleteSelfStock'), only_to_me=False)
-async def deleteSelfStock(session: CommandSession):
-    try:
-        stock_name = session.get('stock_name')
-        handler = Server()
-        response = await handler.deleteSelfStock(stock_name)
-        await session.send(str(response))
-    except:
-        pass
-
-
-@deleteSelfStock.args_parser
-async def deleteSelfStockArgsParser(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()
-    if stripped_arg:
-        session.state['stock_name'] = stripped_arg
-    else:
-        raise Exception('删除自选股命令缺少参数')
-
-
 # 购买股票
-# 命令格式：！购买股票 股票编号 购买价格 购买数量
+# 命令格式：！购买股票 股票名 购买数量
 @on_command('买入', aliases=('buyStock'), only_to_me=False)
 async def buyStock(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
         stock_name = session.get('stock_name')
-        stock_price = float(session.get('stock_price'))
         stock_amount = int(session.get('stock_amount'))
         handler = Server()
-        response = await handler.buyStock(user_id, stock_name, stock_amount, stock_price)
+        response = await handler.buyStock(user_id, stock_name, stock_amount)
         await session.send(str(response))
     except:
         pass
@@ -180,23 +115,21 @@ async def buyStockArgsParser(session: CommandSession):
     if stripped_arg:
         args = stripped_arg.split()
         session.state['stock_name'] = args[0]
-        session.state['stock_price'] = args[1]
-        session.state['stock_amount'] = args[2]
+        session.state['stock_amount'] = args[1]
     else:
         raise Exception('购买股票命令缺少参数')
 
 
 # 卖出股票
-# 命令格式：！卖出股票 股票编号 卖出价格 卖出数量
+# 命令格式：！卖出股票 股票编号 卖出数量
 @on_command('卖出', aliases=('sellStock'), only_to_me=False)
 async def sellStock(session: CommandSession):
     try:
         user_id = str(session.event['sender']['user_id'])
         stock_name = session.get('stock_name')
-        stock_price = float(session.get('stock_price'))
         stock_amount = int(session.get('stock_amount'))
         handler = Server()
-        response = await handler.sellStock(user_id, stock_name, stock_amount, stock_price)
+        response = await handler.sellStock(user_id, stock_name, stock_amount)
         await session.send(str(response))
     except:
         pass
@@ -208,8 +141,7 @@ async def sellStockArgsParser(session: CommandSession):
     if stripped_arg:
         args = stripped_arg.split()
         session.state['stock_name'] = args[0]
-        session.state['stock_price'] = args[1]
-        session.state['stock_amount'] = args[2]
+        session.state['stock_amount'] = args[1]
     else:
         raise Exception('卖出股票命令缺少参数')
 
@@ -227,19 +159,6 @@ async def searchUserHoldings(session: CommandSession):
         pass
 
 
-# 查询订单
-# 命令格式：!查询订单
-@on_command('订单', aliases=('searchAliveOrders'), only_to_me=False)
-async def searchAliveOrders(session: CommandSession):
-    try:
-        user_id = str(session.event['sender']['user_id'])
-        handler = Server()
-        response = await handler.searchAliveOrders(user_id)
-        await session.send(str(response))
-    except:
-        pass
-
-
 # 查询玩家信息
 # 命令格式：!我的信息
 @on_command('信息', aliases=('searchUserInformation'), only_to_me=False)
@@ -251,43 +170,6 @@ async def searchUserInformation(session: CommandSession):
         await session.send(str(response))
     except:
         pass
-
-
-# 取消订单
-# 命令格式：！取消订单 订单id
-@on_command('取消订单', aliases=('cancelOrder'), only_to_me=False)
-async def cancelOrder(session: CommandSession):
-    try:
-        user_id = str(session.event['sender']['user_id'])
-        order_id = int(session.get('order_id'))
-        handler = Server()
-        response = await handler.cancelOrder(user_id, order_id)
-        await session.send(str(response))
-    except:
-        pass
-
-
-@cancelOrder.args_parser
-async def cancelOrderArgsParser(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()
-    if stripped_arg:
-        session.state['order_id'] = stripped_arg
-    else:
-        raise Exception('取消订单命令缺少参数')
-
-
-# 查询股票
-# 命令格式：!股票
-@on_command('股票', aliases=('stock'), only_to_me=False)
-async def searchStock(session: CommandSession):
-    try:
-        handler = Server()
-        # response = await handler.searchStock()
-        response = "本命令已被关闭"
-        await session.send(str(response))
-    except:
-        pass
-
 
 @on_command('帮助', aliases=('help'), only_to_me=False)
 async def help(session: CommandSession):
@@ -317,37 +199,6 @@ async def searchOneStockArgsParser(session: CommandSession):
         session.state['stock_name'] = stripped_arg
     else:
         raise Exception('查询股票信息缺少参数')
-
-
-@on_command('用编号查询', aliases=('searchWithID'), only_to_me=False)
-async def searchOneStockWithID(session: CommandSession):
-    try:
-        stock_id = session.get('stock_id')
-        handler = Server()
-        response = await handler.searchOneStockWithID(stock_id)
-        await session.send(str(response))
-    except:
-        pass
-
-
-@searchOneStockWithID.args_parser
-async def searchOneStockWithIDArgsParser(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()
-    if stripped_arg:
-        session.state['stock_id'] = stripped_arg
-    else:
-        raise Exception('查询股票信息缺少参数')
-
-
-@on_command('让dzy爬', aliases=('dzy', 'dzy爬', 'dzy快爬', '你知道我想说什么', '懂？'), only_to_me=False)
-async def dzyPa(session: CommandSession):
-    try:
-        handler = Server()
-        response = await handler.dzyPa()
-        await session.send(str(response))
-    except:
-        pass
-
 
 @on_command('BTC', aliases=('B'), only_to_me=False)
 async def getBTC(session: CommandSession):
